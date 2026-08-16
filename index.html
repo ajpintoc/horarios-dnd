@@ -170,11 +170,15 @@
 
   .results {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 14px;
   }
 
   @media (max-width: 640px) {
+    .results { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 420px) {
     .results { grid-template-columns: 1fr; }
   }
 
@@ -303,6 +307,8 @@
           <option value="spain">España (Kargax)</option>
           <option value="peru">Perú (Otto)</option>
           <option value="australia">Australia (Chance)</option>
+          <option value="tennessee">Tennessee (Nestor)</option>
+          <option value="miami">Miami (Edgcarl)</option>
         </select>
       </div>
       <div class="field">
@@ -333,8 +339,8 @@
   </div>
 
   <footer>
-    Desfases actuales (agosto 2026) &mdash; <strong>Chile</strong> UTC&minus;4 &middot; <strong>España</strong> UTC+2 &middot; <strong>Perú</strong> UTC&minus;5 &middot; <strong>Australia (Adelaide)</strong> UTC+9:30<br>
-    El 6 de septiembre Chile pasa a horario de verano (UTC&minus;3) y estos cálculos se recorren 1 hora.
+    Desfases actuales (agosto 2026) &mdash; <strong>Chile</strong> UTC&minus;4 &middot; <strong>España</strong> UTC+2 &middot; <strong>Perú</strong> UTC&minus;5 &middot; <strong>Australia (Adelaide)</strong> UTC+9:30 &middot; <strong>Tennessee (Este)</strong> UTC&minus;4 &middot; <strong>Miami</strong> UTC&minus;4<br>
+    El 6 de septiembre Chile pasa a horario de verano (UTC&minus;3) y estos cálculos se recorren 1 hora. EE.UU. mantiene su horario de verano hasta principios de noviembre.
   </footer>
 </div>
 
@@ -345,6 +351,8 @@
     spain: 2 * 60,
     peru: -5 * 60,
     australia: 9 * 60 + 30,
+    tennessee: -4 * 60,
+    miami: -4 * 60,
   };
 
   const LABELS = {
@@ -352,9 +360,11 @@
     spain: "España (Kargax)",
     peru: "Perú (Otto)",
     australia: "Australia (Chance)",
+    tennessee: "Tennessee (Nestor)",
+    miami: "Miami (Edgcarl)",
   };
 
-  const ORDER = ["chile", "spain", "peru", "australia"];
+  const ORDER = ["chile", "spain", "peru", "australia", "tennessee", "miami"];
 
   // --- sky color scale: hour of day (0-24) -> [r,g,b] ---
   const SKY_STOPS = [
