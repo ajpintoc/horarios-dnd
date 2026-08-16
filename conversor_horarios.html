@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Hoguera Compartida — Conversor de Horarios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #14100c;
+    --bg-card: #1f1912;
+    --bg-card-2: #241d15;
+    --border: #3a2f22;
+    --border-soft: #2a2219;
+    --ember: #c1440e;
+    --ember-bright: #e0592a;
+    --gold: #d4a843;
+    --text: #ece3d0;
+    --text-muted: #9c8f7a;
+    --text-dim: #6f6552;
+    --green: #7a9b6e;
+  }
+
+  * { box-sizing: border-box; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+
+  html, body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    background-image:
+      radial-gradient(ellipse 900px 500px at 20% -10%, rgba(193,68,14,0.10), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 90% 110%, rgba(212,168,67,0.06), transparent 60%);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+
+  .wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 56px 24px 80px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .flame {
+    display: inline-block;
+    width: 20px;
+    height: 26px;
+    margin-bottom: 14px;
+    filter: drop-shadow(0 0 8px rgba(224,89,42,0.55));
+    animation: flicker 2.6s ease-in-out infinite;
+  }
+
+  @keyframes flicker {
+    0%, 100% { transform: scaleY(1) scaleX(1) rotate(0deg); opacity: 1; }
+    25% { transform: scaleY(1.06) scaleX(0.96) rotate(-1deg); opacity: 0.92; }
+    50% { transform: scaleY(0.94) scaleX(1.04) rotate(1deg); opacity: 1; }
+    75% { transform: scaleY(1.03) scaleX(0.98) rotate(-0.5deg); opacity: 0.95; }
+  }
+
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: clamp(28px, 4vw, 38px);
+    letter-spacing: 0.01em;
+    margin: 0 0 10px;
+    color: var(--text);
+  }
+
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 15px;
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .card {
+    background: linear-gradient(180deg, var(--bg-card), var(--bg-card-2));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 20px 50px -20px rgba(0,0,0,0.6);
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+
+  .form-row-3 {
+    grid-template-columns: 1.2fr 1fr 1fr;
+  }
+
+  @media (max-width: 640px) {
+    .form-row-3 { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 560px) {
+    .form-row { grid-template-columns: 1fr; }
+  }
+
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+
+  select, input[type="time"] {
+    width: 100%;
+    background: #0f0c09;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 13px 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239c8f7a' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+
+  select:focus, input[type="time"]:focus {
+    border-color: var(--ember-bright);
+    box-shadow: 0 0 0 3px rgba(224,89,42,0.18);
+  }
+
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.7) sepia(1) saturate(2) hue-rotate(340deg);
+    cursor: pointer;
+  }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 28px 0;
+  }
+
+  .results-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+
+  .results {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  @media (max-width: 640px) {
+    .results { grid-template-columns: 1fr; }
+  }
+
+  .result-card {
+    background: var(--bg);
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    padding: 18px 16px 16px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.2s ease;
+  }
+
+  .result-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--ember), var(--gold));
+    opacity: 0.85;
+    z-index: 2;
+  }
+
+  .sky-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    z-index: 2;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4));
+  }
+
+  .result-country {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 12px;
+    padding-right: 22px;
+  }
+
+  .result-time-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+  }
+
+  .result-time {
+    font-family: 'Cinzel', serif;
+    font-size: 19px;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+
+  .result-arrow {
+    font-size: 14px;
+    opacity: 0.6;
+  }
+
+  .day-tag {
+    display: inline-block;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    padding: 1px 5px;
+    border-radius: 999px;
+    margin-left: 2px;
+    vertical-align: middle;
+    background: rgba(0,0,0,0.28);
+  }
+
+  .duration-note {
+    position: relative;
+    z-index: 1;
+    margin-top: 10px;
+    font-size: 11px;
+    font-weight: 500;
+    opacity: 0.75;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 28px;
+    color: var(--text-dim);
+    font-size: 12.5px;
+    line-height: 1.7;
+  }
+
+  footer strong {
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <svg class="flame" viewBox="0 0 20 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10 0C10 0 4 7 4 13.5C4 18.7 6.9 22.5 10 22.5C13.1 22.5 16 18.7 16 13.5C16 12 15.5 10.3 14.7 8.7C14.7 11 13.5 12.5 12.3 13C12.8 10.5 11.5 7 10 0Z" fill="url(#flameGrad)"/>
+      <defs>
+        <linearGradient id="flameGrad" x1="10" y1="0" x2="10" y2="22.5" gradientUnits="userSpaceOnUse">
+          <stop stop-color="#d4a843"/>
+          <stop offset="0.55" stop-color="#e0592a"/>
+          <stop offset="1" stop-color="#c1440e"/>
+        </linearGradient>
+      </defs>
+    </svg>
+    <h1>La Hoguera Compartida</h1>
+    <p class="subtitle">Convierte la hora de sesión entre Chile, España, Perú y Australia. Elige un país, una hora y la duración — el resto se calcula solo.</p>
+  </header>
+
+  <div class="card">
+    <div class="form-row form-row-3">
+      <div class="field">
+        <label for="country">País de referencia</label>
+        <select id="country">
+          <option value="chile">Chile (Percival)</option>
+          <option value="spain">España (Kargax)</option>
+          <option value="peru">Perú (Otto)</option>
+          <option value="australia">Australia (Chance)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="time">Hora de inicio</label>
+        <input type="time" id="time" value="18:00">
+      </div>
+      <div class="field">
+        <label for="duration">Duración</label>
+        <select id="duration">
+          <option value="1">1 hora</option>
+          <option value="2">2 horas</option>
+          <option value="3">3 horas</option>
+          <option value="4">4 horas</option>
+          <option value="5">5 horas</option>
+          <option value="6" selected>6 horas</option>
+          <option value="7">7 horas</option>
+          <option value="8">8 horas</option>
+          <option value="9">9 horas</option>
+          <option value="10">10 horas</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="results-label">Horario equivalente en los demás países</div>
+    <div class="results" id="results"></div>
+  </div>
+
+  <footer>
+    Desfases actuales (agosto 2026) &mdash; <strong>Chile</strong> UTC&minus;4 &middot; <strong>España</strong> UTC+2 &middot; <strong>Perú</strong> UTC&minus;5 &middot; <strong>Australia (Adelaide)</strong> UTC+9:30<br>
+    El 6 de septiembre Chile pasa a horario de verano (UTC&minus;3) y estos cálculos se recorren 1 hora.
+  </footer>
+</div>
+
+<script>
+  // UTC offsets in minutes, current as of Aug 2026
+  const OFFSETS = {
+    chile: -4 * 60,
+    spain: 2 * 60,
+    peru: -5 * 60,
+    australia: 9 * 60 + 30,
+  };
+
+  const LABELS = {
+    chile: "Chile (Percival)",
+    spain: "España (Kargax)",
+    peru: "Perú (Otto)",
+    australia: "Australia (Chance)",
+  };
+
+  const ORDER = ["chile", "spain", "peru", "australia"];
+
+  // --- sky color scale: hour of day (0-24) -> [r,g,b] ---
+  const SKY_STOPS = [
+    [0,  [10, 14, 38]],
+    [3,  [13, 20, 48]],
+    [5,  [55, 48, 92]],
+    [6,  [196, 122, 82]],
+    [7,  [233, 178, 92]],
+    [9,  [120, 178, 224]],
+    [12, [58, 146, 214]],
+    [15, [77, 150, 205]],
+    [17, [223, 150, 80]],
+    [18, [204, 90, 66]],
+    [19, [74, 52, 92]],
+    [21, [24, 26, 66]],
+    [23, [13, 16, 44]],
+    [24, [10, 14, 38]],
+  ];
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  function getSkyColor(hourFloat) {
+    let h = ((hourFloat % 24) + 24) % 24;
+    for (let i = 0; i < SKY_STOPS.length - 1; i++) {
+      const [h0, c0] = SKY_STOPS[i];
+      const [h1, c1] = SKY_STOPS[i + 1];
+      if (h >= h0 && h <= h1) {
+        const t = (h - h0) / (h1 - h0);
+        return [
+          Math.round(lerp(c0[0], c1[0], t)),
+          Math.round(lerp(c0[1], c1[1], t)),
+          Math.round(lerp(c0[2], c1[2], t)),
+        ];
+      }
+    }
+    return SKY_STOPS[0][1];
+  }
+
+  function relativeLuminance([r, g, b]) {
+    // perceptual brightness approximation
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  }
+
+  function rgbToCss([r, g, b], alpha) {
+    return alpha !== undefined ? `rgba(${r},${g},${b},${alpha})` : `rgb(${r},${g},${b})`;
+  }
+
+  function isDaytime(hourFloat) {
+    const h = ((hourFloat % 24) + 24) % 24;
+    return h >= 6 && h < 18;
+  }
+
+  function sunIconSVG(color) {
+    return `<svg class="sky-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="5" fill="${color}"/>
+      <g stroke="${color}" stroke-width="1.6" stroke-linecap="round">
+        <line x1="12" y1="1.5" x2="12" y2="4.5"/>
+        <line x1="12" y1="19.5" x2="12" y2="22.5"/>
+        <line x1="1.5" y1="12" x2="4.5" y2="12"/>
+        <line x1="19.5" y1="12" x2="22.5" y2="12"/>
+        <line x1="4.4" y1="4.4" x2="6.5" y2="6.5"/>
+        <line x1="17.5" y1="17.5" x2="19.6" y2="19.6"/>
+        <line x1="4.4" y1="19.6" x2="6.5" y2="17.5"/>
+        <line x1="17.5" y1="6.5" x2="19.6" y2="4.4"/>
+      </g>
+    </svg>`;
+  }
+
+  function moonIconSVG(color) {
+    return `<svg class="sky-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 13.5A8.5 8.5 0 1 1 10.5 4a6.8 6.8 0 1 0 9.5 9.5Z" fill="${color}"/>
+    </svg>`;
+  }
+
+  function formatTime(totalMinutes) {
+    let m = ((totalMinutes % 1440) + 1440) % 1440;
+    let h = Math.floor(m / 60);
+    let min = m % 60;
+    const ampm = h < 12 ? "am" : "pm";
+    let h12 = h % 12;
+    if (h12 === 0) h12 = 12;
+    return `${h12}:${String(min).padStart(2, "0")} ${ampm}`;
+  }
+
+  function dayOffset(totalMinutes) {
+    return Math.floor(totalMinutes / 1440);
+  }
+
+  function dayTagHTML(off, textColor) {
+    if (off === 0) return "";
+    const txt = off > 0 ? `+${off}` : `${off}`;
+    return `<span class="day-tag" style="color:${textColor}">${txt}</span>`;
+  }
+
+  function compute() {
+    const country = document.getElementById("country").value;
+    const timeVal = document.getElementById("time").value;
+    const duration = parseInt(document.getElementById("duration").value, 10);
+    if (!timeVal) return;
+
+    const [hh, mm] = timeVal.split(":").map(Number);
+    const localStartMinutes = hh * 60 + mm;
+    const utcStartMinutes = localStartMinutes - OFFSETS[country];
+    const utcEndMinutes = utcStartMinutes + duration * 60;
+
+    const resultsEl = document.getElementById("results");
+    resultsEl.innerHTML = "";
+
+    ORDER.filter(c => c !== country).forEach(c => {
+      const startMinutes = utcStartMinutes + OFFSETS[c];
+      const endMinutes = utcEndMinutes + OFFSETS[c];
+
+      const startOff = dayOffset(startMinutes);
+      const endOff = dayOffset(endMinutes);
+
+      const startHourFloat = (((startMinutes % 1440) + 1440) % 1440) / 60;
+      const endHourFloat = (((endMinutes % 1440) + 1440) % 1440) / 60;
+
+      const startColor = getSkyColor(startHourFloat);
+      const endColor = getSkyColor(endHourFloat);
+
+      const avgLum = (relativeLuminance(startColor) + relativeLuminance(endColor)) / 2;
+      const textColor = avgLum > 0.55 ? "#1a1512" : "#f3ead8";
+      const mutedTextColor = avgLum > 0.55 ? "rgba(26,21,18,0.65)" : "rgba(243,234,216,0.7)";
+
+      const card = document.createElement("div");
+      card.className = "result-card";
+      card.style.background = `linear-gradient(135deg, ${rgbToCss(startColor)}, ${rgbToCss(endColor)})`;
+      card.style.borderColor = "rgba(255,255,255,0.08)";
+
+      const iconColor = textColor;
+      const iconSVG = isDaytime(startHourFloat) ? sunIconSVG(iconColor) : moonIconSVG(iconColor);
+
+      card.innerHTML = `
+        ${iconSVG}
+        <div class="result-country" style="color:${mutedTextColor}">${LABELS[c]}</div>
+        <div class="result-time-row">
+          <span class="result-time" style="color:${textColor}">${formatTime(startMinutes)}${dayTagHTML(startOff, mutedTextColor)}</span>
+          <span class="result-arrow" style="color:${mutedTextColor}">&rarr;</span>
+          <span class="result-time" style="color:${textColor}">${formatTime(endMinutes)}${dayTagHTML(endOff, mutedTextColor)}</span>
+        </div>
+        <div class="duration-note" style="color:${mutedTextColor}">${duration} hora${duration > 1 ? "s" : ""} de sesión</div>
+      `;
+
+      resultsEl.appendChild(card);
+    });
+  }
+
+  document.getElementById("country").addEventListener("change", compute);
+  document.getElementById("time").addEventListener("input", compute);
+  document.getElementById("duration").addEventListener("change", compute);
+
+  compute();
+</script>
+</body>
+</html>
