@@ -6,6 +6,8 @@
 <title>La Hoguera Compartida — Conversor de Horarios</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <style>
   :root {
     --bg: #14100c;
@@ -267,6 +269,209 @@
     opacity: 0.75;
   }
 
+  /* --- favorite / poll section --- */
+  .favorite-section {
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .fav-instructions {
+    max-width: 480px;
+    margin: 0 auto 20px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+
+  .fav-instructions strong {
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  .fav-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  select#voterName {
+    width: auto;
+    min-width: 160px;
+  }
+
+  .fav-btn {
+    background: linear-gradient(135deg, var(--ember), var(--ember-bright));
+    color: #fff2e6;
+    border: none;
+    border-radius: 10px;
+    padding: 13px 22px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    box-shadow: 0 8px 20px -8px rgba(193,68,14,0.6);
+  }
+
+  .fav-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -8px rgba(193,68,14,0.75); }
+  .fav-btn:active { transform: translateY(0); }
+  .fav-btn:disabled { opacity: 0.6; cursor: default; transform: none; }
+
+  .fav-status {
+    margin-top: 12px;
+    font-size: 13px;
+    min-height: 18px;
+    color: var(--green);
+  }
+
+  .fav-status.error { color: var(--ember-bright); }
+
+  .my-votes {
+    margin-top: 18px;
+    text-align: left;
+  }
+
+  .my-votes-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+    text-align: center;
+  }
+
+  .my-vote-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg);
+    border: 1px solid var(--border-soft);
+    border-radius: 9px;
+    padding: 9px 12px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+
+  .my-vote-detail { color: var(--text); }
+  .my-vote-detail .muted { color: var(--text-muted); font-size: 12px; }
+
+  .my-vote-remove {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 6px;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+
+  .my-vote-remove:hover { color: var(--ember-bright); background: rgba(224,89,42,0.1); }
+
+  .results-toggle {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .results-toggle:hover { border-color: var(--gold); color: var(--gold); }
+
+  .poll-results {
+    display: none;
+    margin-top: 20px;
+    text-align: left;
+  }
+
+  .poll-results.open { display: block; }
+
+  .poll-tally {
+    margin-bottom: 18px;
+  }
+
+  .poll-tally-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+
+  .poll-tally-label {
+    min-width: 90px;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .poll-tally-bar-wrap {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    overflow: hidden;
+    height: 20px;
+  }
+
+  .poll-tally-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--ember), var(--gold));
+  }
+
+  .poll-tally-count {
+    min-width: 20px;
+    text-align: right;
+    color: var(--text-dim);
+    font-weight: 600;
+  }
+
+  .poll-votes-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+
+  .poll-vote-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-soft);
+    font-size: 13px;
+  }
+
+  .poll-vote-item:last-child { border-bottom: none; }
+
+  .poll-vote-name {
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .poll-vote-detail {
+    color: var(--text-muted);
+  }
+
+  .poll-empty {
+    color: var(--text-dim);
+    font-size: 13px;
+    text-align: center;
+    padding: 10px 0;
+  }
+
   footer {
     text-align: center;
     margin-top: 28px;
@@ -295,7 +500,7 @@
       </defs>
     </svg>
     <h1>La Hoguera Compartida</h1>
-    <p class="subtitle">Convierte la hora de sesión entre Chile, España, Perú, USA y Australia. Elige un país, una hora y la duración de la sesion — el resto se calcula solo.</p>
+    <p class="subtitle">Convierte la hora de sesión entre Chile, España, Perú y Australia. Elige un país, una hora y la duración — el resto se calcula solo.</p>
   </header>
 
   <div class="card">
@@ -316,7 +521,7 @@
         <input type="time" id="time" value="18:00">
       </div>
       <div class="field">
-        <label for="duration">Duración de la sesion</label>
+        <label for="duration">Duración</label>
         <select id="duration">
           <option value="1">1 hora</option>
           <option value="2">2 horas</option>
@@ -336,6 +541,37 @@
 
     <div class="results-label">Horario equivalente en los demás países</div>
     <div class="results" id="results"></div>
+
+    <div class="favorite-section">
+      <p class="fav-instructions">
+        Elige tu nombre, ajusta arriba el país, la hora y la duración que prefieras, y presiona
+        <strong>“Agregar este horario a mis favoritos”</strong> para guardarlo. Puedes guardar hasta
+        <strong>3 horarios distintos</strong> por persona — si ya tienes 3, quita uno de la lista antes de agregar otro.
+      </p>
+      <div class="fav-row">
+        <select id="voterName">
+          <option value="">Tu nombre...</option>
+          <option value="Percival">Percival (Chile)</option>
+          <option value="Kargax">Kargax (España)</option>
+          <option value="Otto">Otto (Perú)</option>
+          <option value="Chance">Chance (Australia)</option>
+          <option value="Nestor">Nestor (Tennessee)</option>
+          <option value="Edgcarl">Edgcarl (Miami)</option>
+        </select>
+        <button class="fav-btn" id="favBtn">★ Agregar este horario a mis favoritos</button>
+      </div>
+      <div class="fav-status" id="favStatus"></div>
+
+      <div class="my-votes" id="myVotes"></div>
+
+      <button class="results-toggle" id="toggleResults">Ver resultados de la encuesta</button>
+
+      <div class="poll-results" id="pollResults">
+        <div class="poll-tally" id="pollTally"></div>
+        <div class="poll-votes-label">Votos individuales</div>
+        <div id="pollVotes"></div>
+      </div>
+    </div>
   </div>
 
   <footer>
@@ -518,6 +754,300 @@
   document.getElementById("duration").addEventListener("change", compute);
 
   compute();
+
+  // ============================================================
+  // FIREBASE — encuesta de horario favorito
+  // ============================================================
+  // 1. Reemplaza el objeto de abajo con el "firebaseConfig" que te
+  //    dio la consola de Firebase al registrar tu app web.
+  // 2. Guarda el archivo y súbelo a GitHub Pages (o donde lo hospedes).
+  // ============================================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyC1lpurCKa0-5-rceEGMkKEJ1xGs5ZNnZ8",
+    authDomain: "horarios-dnd.firebaseapp.com",
+    projectId: "horarios-dnd",
+    storageBucket: "horarios-dnd.firebasestorage.app",
+    messagingSenderId: "823482969846",
+    appId: "1:823482969846:web:2cc8be4eb96ee197ff06d7",
+  };
+
+  let db = null;
+  let firebaseReady = false;
+
+  function initFirebase() {
+    try {
+      if (typeof firebase === "undefined") {
+        console.warn(
+          "Firebase no se cargó (typeof firebase === 'undefined'). " +
+          "Causas comunes: un bloqueador de anuncios/privacidad bloqueando gstatic.com, " +
+          "estar viendo el archivo localmente (file://) en vez del sitio publicado, " +
+          "o una conexión lenta al cargar la página. La encuesta quedará desactivada, " +
+          "pero el conversor de horarios sigue funcionando normalmente."
+        );
+        setFavStatus("La encuesta no pudo conectarse (revisa tu bloqueador de anuncios o recarga la página).", true);
+        return;
+      }
+      if (!firebaseConfig.apiKey || firebaseConfig.apiKey.startsWith("PEGA_AQUI")) {
+        console.warn("Firebase config incompleta: falta reemplazar firebaseConfig.");
+        return;
+      }
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      firebaseReady = true;
+      console.log("Firebase conectado correctamente.");
+    } catch (e) {
+      console.warn("Firebase no se pudo inicializar:", e);
+      setFavStatus("La encuesta no pudo conectarse (revisa tu bloqueador de anuncios o recarga la página).", true);
+    }
+  }
+
+  // initialize once everything (including the external SDK scripts) has
+  // had a chance to load, for extra safety on slower connections
+  if (document.readyState === "complete") {
+    initFirebase();
+  } else {
+    window.addEventListener("load", initFirebase);
+  }
+
+  const COLLECTION_NAME = "horarios_favoritos";
+  const MAX_VOTES_PER_PERSON = 3;
+
+  function setFavStatus(msg, isError) {
+    const el = document.getElementById("favStatus");
+    el.textContent = msg;
+    el.className = "fav-status" + (isError ? " error" : "");
+  }
+
+  function chileEquivalentOf(country, localMinutes, duration) {
+    const utcStart = localMinutes - OFFSETS[country];
+    const utcEnd = utcStart + duration * 60;
+    const chileStart = utcStart + OFFSETS.chile;
+    const chileEnd = utcEnd + OFFSETS.chile;
+    return { chileStart, chileEnd };
+  }
+
+  function currentVoteEntry() {
+    const country = document.getElementById("country").value;
+    const timeVal = document.getElementById("time").value;
+    const duration = parseInt(document.getElementById("duration").value, 10);
+    const [hh, mm] = timeVal.split(":").map(Number);
+    const localMinutes = hh * 60 + mm;
+    const { chileStart, chileEnd } = chileEquivalentOf(country, localMinutes, duration);
+
+    return {
+      country,
+      countryLabel: LABELS[country],
+      localTime: timeVal,
+      duration,
+      chileStartMinutes: ((chileStart % 1440) + 1440) % 1440,
+      chileEndMinutes: ((chileEnd % 1440) + 1440) % 1440,
+      chileDayOffset: dayOffset(chileStart),
+      addedAt: Date.now(),
+    };
+  }
+
+  function isDuplicateVote(votes, entry) {
+    return votes.some(v =>
+      v.country === entry.country &&
+      v.localTime === entry.localTime &&
+      v.duration === entry.duration
+    );
+  }
+
+  async function getMyVotesDoc(name) {
+    const docRef = db.collection(COLLECTION_NAME).doc(name);
+    const snap = await docRef.get();
+    return { docRef, votes: snap.exists ? (snap.data().votes || []) : [] };
+  }
+
+  function renderMyVotes(votes) {
+    const wrap = document.getElementById("myVotes");
+    const name = document.getElementById("voterName").value;
+    if (!name) { wrap.innerHTML = ""; return; }
+
+    const label = `<div class="my-votes-label">Horarios guardados de ${name} (${votes.length}/${MAX_VOTES_PER_PERSON})</div>`;
+
+    if (votes.length === 0) {
+      wrap.innerHTML = label + '<div class="poll-empty">Aún no has guardado ningún horario.</div>';
+      return;
+    }
+
+    const items = votes.map((v, i) => `
+      <div class="my-vote-item">
+        <span class="my-vote-detail">${v.countryLabel} · ${v.localTime} (${v.duration}h)
+          <span class="muted">&rarr; ${formatTime(v.chileStartMinutes)} Chile</span>
+        </span>
+        <button class="my-vote-remove" data-index="${i}" title="Quitar este horario">✕</button>
+      </div>
+    `).join("");
+
+    wrap.innerHTML = label + items;
+
+    wrap.querySelectorAll(".my-vote-remove").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const idx = parseInt(btn.getAttribute("data-index"), 10);
+        await removeVote(name, idx);
+      });
+    });
+  }
+
+  async function refreshMyVotes() {
+    const name = document.getElementById("voterName").value;
+    if (!name || !firebaseReady) {
+      document.getElementById("myVotes").innerHTML = "";
+      return;
+    }
+    try {
+      const { votes } = await getMyVotesDoc(name);
+      renderMyVotes(votes);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function removeVote(name, index) {
+    try {
+      const { docRef, votes } = await getMyVotesDoc(name);
+      votes.splice(index, 1);
+      await docRef.set({ name, votes }, { merge: true });
+      renderMyVotes(votes);
+      setFavStatus("Horario eliminado.", false);
+    } catch (e) {
+      console.error(e);
+      setFavStatus("No se pudo eliminar. Intenta de nuevo.", true);
+    }
+  }
+
+  async function saveFavorite() {
+    const name = document.getElementById("voterName").value;
+    if (!name) {
+      setFavStatus("Elige tu nombre antes de votar.", true);
+      return;
+    }
+    if (!firebaseReady) {
+      setFavStatus("La encuesta aún no está conectada (falta configurar Firebase).", true);
+      return;
+    }
+
+    const btn = document.getElementById("favBtn");
+    btn.disabled = true;
+
+    try {
+      const { docRef, votes } = await getMyVotesDoc(name);
+      const entry = currentVoteEntry();
+
+      if (isDuplicateVote(votes, entry)) {
+        setFavStatus("Ya guardaste exactamente este horario.", true);
+        return;
+      }
+      if (votes.length >= MAX_VOTES_PER_PERSON) {
+        setFavStatus(`Ya tienes ${MAX_VOTES_PER_PERSON} horarios guardados. Quita uno de la lista para agregar otro.`, true);
+        renderMyVotes(votes);
+        return;
+      }
+
+      const updatedVotes = votes.concat([entry]);
+      await docRef.set({ name, votes: updatedVotes }, { merge: true });
+      renderMyVotes(updatedVotes);
+      setFavStatus(`¡Guardado! (${updatedVotes.length}/${MAX_VOTES_PER_PERSON})`, false);
+    } catch (e) {
+      console.error(e);
+      setFavStatus("No se pudo guardar el voto. Intenta de nuevo.", true);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function renderTally(allVotes) {
+    const buckets = {};
+    allVotes.forEach(v => {
+      const h = Math.floor((v.chileStartMinutes || 0) / 60);
+      buckets[h] = (buckets[h] || 0) + 1;
+    });
+    const maxCount = Math.max(1, ...Object.values(buckets));
+    const sortedHours = Object.keys(buckets).map(Number).sort((a, b) => a - b);
+
+    const tallyEl = document.getElementById("pollTally");
+    if (sortedHours.length === 0) {
+      tallyEl.innerHTML = '<div class="poll-empty">Aún no hay votos.</div>';
+      return;
+    }
+
+    tallyEl.innerHTML = sortedHours.map(h => {
+      const count = buckets[h];
+      const pct = Math.round((count / maxCount) * 100);
+      const label = formatTime(h * 60);
+      return `
+        <div class="poll-tally-row">
+          <div class="poll-tally-label">${label} (Chile)</div>
+          <div class="poll-tally-bar-wrap"><div class="poll-tally-bar" style="width:${pct}%"></div></div>
+          <div class="poll-tally-count">${count}</div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderVotes(peopleVotes) {
+    const votesEl = document.getElementById("pollVotes");
+    const flat = [];
+    peopleVotes.forEach(person => {
+      (person.votes || []).forEach(v => flat.push({ name: person.name, ...v }));
+    });
+
+    if (flat.length === 0) {
+      votesEl.innerHTML = '<div class="poll-empty">Nadie ha votado todavía.</div>';
+      return;
+    }
+
+    votesEl.innerHTML = flat.map(v => {
+      const startTxt = formatTime(v.chileStartMinutes || 0);
+      const endTxt = formatTime(v.chileEndMinutes || 0);
+      return `
+        <div class="poll-vote-item">
+          <span class="poll-vote-name">${v.name}</span>
+          <span class="poll-vote-detail">${v.countryLabel || v.country} · ${v.localTime} (${v.duration}h) &rarr; ${startTxt}–${endTxt} Chile</span>
+        </div>
+      `;
+    }).join("");
+  }
+
+  async function loadResults() {
+    if (!firebaseReady) {
+      document.getElementById("pollTally").innerHTML =
+        '<div class="poll-empty">La encuesta aún no está conectada (falta configurar Firebase).</div>';
+      document.getElementById("pollVotes").innerHTML = "";
+      return;
+    }
+    try {
+      const snapshot = await db.collection(COLLECTION_NAME).get();
+      const people = [];
+      const allVotesFlat = [];
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        people.push(data);
+        (data.votes || []).forEach(v => allVotesFlat.push(v));
+      });
+      renderTally(allVotesFlat);
+      renderVotes(people);
+    } catch (e) {
+      console.error(e);
+      document.getElementById("pollTally").innerHTML =
+        '<div class="poll-empty">No se pudieron cargar los resultados.</div>';
+    }
+  }
+
+  document.getElementById("favBtn").addEventListener("click", saveFavorite);
+  document.getElementById("voterName").addEventListener("change", refreshMyVotes);
+
+  const toggleBtn = document.getElementById("toggleResults");
+  const pollResultsEl = document.getElementById("pollResults");
+  let resultsOpen = false;
+  toggleBtn.addEventListener("click", async () => {
+    resultsOpen = !resultsOpen;
+    pollResultsEl.classList.toggle("open", resultsOpen);
+    toggleBtn.textContent = resultsOpen ? "Ocultar resultados" : "Ver resultados de la encuesta";
+    if (resultsOpen) await loadResults();
+  });
 </script>
 </body>
 </html>
